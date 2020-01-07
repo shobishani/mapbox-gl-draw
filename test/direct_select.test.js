@@ -10,7 +10,7 @@ import spy from 'sinon/lib/sinon/spy'; // avoid babel-register-related error by 
 import setupAfterNextRender from './utils/after_next_render';
 import makeMouseEvent from './utils/make_mouse_event';
 import makeTouchEvent from './utils/make_touch_event';
-import Constants from '../src/constants';
+import * as Constants from '../src/constants';
 import createSyntheticEvent from 'synthetic-dom-events';
 
 test('direct_select', (t) => {
@@ -116,6 +116,33 @@ test('direct_select', (t) => {
           st.equal(actionable.actions.uncombineFeatures, false, 'should fire correct uncombine actionable');
           st.equal(actionable.actions.trash, true, 'should fire correct trash actionable');
         }
+        cleanUp(() => st.end());
+      });
+    });
+  });
+
+  t.test('direct_select - trashing vertices should delete the correct ones', (st) => {
+    const longLine = {
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates: [[0, 0], [10, 0], [20, 0], [30, 0], [40, 0], [50, 0], [60, 0], [70, 0], [80, 0], [80, 10], [70, 10], [60, 10], [50, 10]]
+      }
+    };
+    const ids = Draw.add(longLine);
+    Draw.changeMode(Constants.modes.DIRECT_SELECT, {
+      featureId: ids[0]
+    });
+    afterNextRender(() => {
+      // select multiple nodes at indices 9, 10, 11
+      click(map, makeMouseEvent(70, 10, { shiftKey: true }));
+      click(map, makeMouseEvent(80, 10, { shiftKey: true }));
+      click(map, makeMouseEvent(60, 10, { shiftKey: true }));
+      afterNextRender(() => {
+        Draw.trash();
+        const afterTrash = Draw.get(ids[0]);
+        st.deepEqual(afterTrash.geometry.coordinates, [[0, 0], [10, 0], [20, 0], [30, 0], [40, 0], [50, 0], [60, 0], [70, 0], [80, 0], [50, 10]]);
         cleanUp(() => st.end());
       });
     });
