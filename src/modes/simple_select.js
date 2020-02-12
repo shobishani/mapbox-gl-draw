@@ -112,6 +112,7 @@ SimpleSelect.onMouseOut = function(state) {
 };
 
 SimpleSelect.onTap = SimpleSelect.onClick = function(state, e) {
+  debugger;
   // Click (with or without shift) on no feature
   if (CommonSelectors.noTarget(e)) return this.clickAnywhere(state, e); // also tap
   if (CommonSelectors.isOfMetaType(Constants.meta.VERTEX)(e)) return this.clickOnVertex(state, e); //tap
